@@ -1,0 +1,28 @@
+{
+  "name": "pje-cli-assistant",
+  "version": "0.1.0",
+  "description": "Um assistente de linha de comando em Bash para interagir com a API de Comunicação do PJE",
+  "main": "src/pje_cli.sh",
+  "scripts": {
+    "test": "echo \"Nenhum teste implementado ainda\"",
+    "build": "echo \"Nenhuma build necessária para bash script\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seu-usuario/dje_cli.git"
+  },
+  "keywords": [
+    "pje",
+    "cli",
+    "bash",
+    "legal",
+    "brasil",
+    "api"
+  ],
+  "author": "Luiz Peixoto",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/seu-usuario/dje_cli/issues"
+  },
+  "homepage": "https://github.com/seu-usuario/dje_cli#readme"
+}

@@ -1,0 +1,11 @@
+# Arquivo de Configuração do PJE CLI Assistant
+# Preencha com seus dados
+
+# Nome completo do advogado (use %20 para espaços se necessário, ou o script tratará)
+NOME_ADV="LUIZ PEIXOTO DE SIQUEIRA FILHO"
+
+# Número da OAB (apenas dígitos)
+NUMERO_OAB="94719"
+
+# Unidade Federativa da OAB (ex: RJ, SP)
+UF_OAB="RJ"

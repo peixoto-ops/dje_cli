@@ -1,0 +1,35 @@
+# Arquivos de configuração sensíveis
+src/config/pje.conf
+
+# Diretórios de build e releases
+build/
+releases/
+dist/
+*.tar.gz
+*.zip
+
+# Arquivos temporários
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Arquivos de log
+*.log
+
+# Ambientes virtuais (se usados)
+venv/
+env/
+.venv/
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Histórico de comandos (bash)
+.bash_history
+
+# Outros arquivos temporários do sistema
+*~

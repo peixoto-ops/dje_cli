@@ -1,0 +1,49 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Extract changelog for this version
+          sed -n "/^## \[${{ steps.version.outputs.version }}\]/,/^## \[.*\]/p" CHANGELOG.md | head -n -1 > release_changelog.txt
+          # If no specific changelog found, extract recent commits
+          if [ ! -s release_changelog.txt ] || [ -z "$(cat release_changelog.txt)" ]; then
+            git log --oneline --no-merges -10 > release_changelog.txt
+          fi
+          echo "changelog=$(cat release_changelog.txt)" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release v${{ steps.version.outputs.version }}
+          body: |
+            ## Mudanças nesta versão:
+            
+            ${{ steps.changelog.outputs.changelog }}
+            
+            Para ver o changelog completo, visite [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md).
+          draft: false
+          prerelease: false

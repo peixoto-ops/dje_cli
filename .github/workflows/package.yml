@@ -1,0 +1,123 @@
+name: Package Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  package:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up environment
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ] || [ "$RUNNER_OS" = "macOS" ]; then
+            echo "OS_NAME=unix" >> $GITHUB_ENV
+          elif [ "$RUNNER_OS" = "Windows" ]; then
+            echo "OS_NAME=windows" >> $GITHUB_ENV
+          fi
+        shell: bash
+
+      - name: Prepare package for Unix (Linux/macOS)
+        if: env.OS_NAME == 'unix'
+        run: |
+          # Create package directory structure
+          PKG_DIR="pje-cli-assistant-${{ github.event.release.tag_name }}-unix"
+          mkdir -p "$PKG_DIR"/{bin,config,docs}
+          
+          # Copy main script
+          cp src/pje_cli.sh "$PKG_DIR/bin/"
+          chmod +x "$PKG_DIR/bin/pje_cli.sh"
+          
+          # Copy config example
+          cp src/config/pje.conf.example "$PKG_DIR/config/"
+          
+          # Copy documentation
+          cp -r docs "$PKG_DIR/"
+          
+          # Create simple installer script
+          cat > "$PKG_DIR/install.sh" << 'EOF'
+          #!/bin/bash
+          # Simple installer for PJE CLI Assistant
+          
+          set -e
+          
+          echo "PJE CLI Assistant Installer"
+          
+          # Determine where to install
+          if [ -w "/usr/local/bin" ]; then
+            INSTALL_DIR="/usr/local/bin"
+          else
+            INSTALL_DIR="$HOME/bin"
+            mkdir -p "$INSTALL_DIR"
+            echo "Added $HOME/bin to PATH (if not already present)" >> ~/.bashrc
+          fi
+          
+          # Copy the script
+          cp bin/pje_cli.sh "$INSTALL_DIR/"
+          chmod +x "$INSTALL_DIR/pje_cli.sh"
+          
+          # Copy config if it doesn't exist
+          CONFIG_DIR="$HOME/.config/pje"
+          mkdir -p "$CONFIG_DIR"
+          if [ ! -f "$CONFIG_DIR/pje.conf" ]; then
+            cp config/pje.conf.example "$CONFIG_DIR/pje.conf"
+            echo "Created config file at $CONFIG_DIR/pje.conf - please update with your credentials"
+          fi
+          
+          echo "Installation completed! Run 'pje_cli.sh' to start."
+          EOF
+          
+          chmod +x "$PKG_DIR/install.sh"
+          
+          # Create archive
+          tar -czf "$PKG_DIR.tar.gz" "$PKG_DIR"
+          echo "ASSET_PATH=$PKG_DIR.tar.gz" >> $GITHUB_ENV
+
+      - name: Prepare package for Windows
+        if: env.OS_NAME == 'windows'
+        run: |
+          # Create package directory structure
+          $PKG_DIR = "pje-cli-assistant-$($env:GITHUB_EVENT_RELEASE_TAG_NAME)-windows"
+          New-Item -ItemType Directory -Path $PKG_DIR -Force
+          New-Item -ItemType Directory -Path "$PKG_DIR\bin" -Force
+          New-Item -ItemType Directory -Path "$PKG_DIR\config" -Force
+          New-Item -ItemType Directory -Path "$PKG_DIR\docs" -Force
+          
+          # Copy main script
+          Copy-Item "src\pje_cli.sh" "$PKG_DIR\bin\"
+          
+          # Copy config example
+          Copy-Item "src\config\pje.conf.example" "$PKG_DIR\config\"
+          
+          # Copy documentation
+          Copy-Item "docs" -Destination "$PKG_DIR\" -Recurse
+          
+          # Create batch file for Windows users with Git Bash
+          Set-Content -Path "$PKG_DIR\bin\pje_cli.bat" -Value @"
+          @echo off
+          REM Batch file to run PJE CLI Assistant from Windows
+          REM Requires Git Bash or WSL to be installed
+          bash -c "exec -a pje_cli.sh ./bin/pje_cli.sh"
+          "@
+          
+          # Create ZIP archive
+          Compress-Archive -Path $PKG_DIR -DestinationPath "$PKG_DIR.zip"
+          echo "ASSET_PATH=$PKG_DIR.zip" >> $env:GITHUB_ENV
+        shell: pwsh
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ env.ASSET_PATH }}
+          asset_name: ${{ env.ASSET_PATH }}
+          asset_content_type: application/octet-stream

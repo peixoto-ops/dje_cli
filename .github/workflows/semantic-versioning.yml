@@ -1,0 +1,82 @@
+name: Semantic Versioning
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  semantic-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install semantic-release
+        run: npm install --save-dev semantic-release conventional-changelog-conventionalcommits
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Generate next version
+        id: version
+        run: |
+          # Read current version
+          CURRENT_VERSION=$(cat VERSION)
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Parse conventional commits to determine next version
+          # This is a simplified approach - a real implementation would use semantic-release
+          COMMITS=$(git log --oneline $(git describe --tags --abbrev=0 2^..HEAD 2>/dev/null || git rev-list --max-parents=0 HEAD) --pretty=format:"%s" | head -20)
+          
+          MAJOR=$(echo "$COMMITS" | grep -c "BREAKING CHANGE\|!" || echo 0)
+          MINOR=$(echo "$COMMITS" | grep -c "feat\|feature" || echo 0)
+          PATCH=$(echo "$COMMITS" | grep -c "fix\|patch" || echo 0)
+          
+          # Extract current version numbers
+          current_major=$(echo "$CURRENT_VERSION" | cut -d. -f1)
+          current_minor=$(echo "$CURRENT_VERSION" | cut -d. -f2)
+          current_patch=$(echo "$CURRENT_VERSION" | cut -d. -f3)
+          
+          # Determine next version
+          if [ $MAJOR -gt 0 ]; then
+            next_major=$((current_major + 1))
+            next_minor=0
+            next_patch=0
+          elif [ $MINOR -gt 0 ]; then
+            next_major=$current_major
+            next_minor=$((current_minor + 1))
+            next_patch=0
+          else
+            next_major=$current_major
+            next_minor=$current_minor
+            next_patch=$((current_patch + 1))
+          fi
+          
+          NEW_VERSION="$next_major.$next_minor.$next_patch"
+          echo "New version: $NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          
+          # Update VERSION file
+          echo "$NEW_VERSION" > VERSION
+
+      - name: Commit new version
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add VERSION
+          git commit -m "chore(release): ${{ steps.version.outputs.new_version }}" || echo "No changes to commit"
+          
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
