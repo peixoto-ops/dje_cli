@@ -1,0 +1,27 @@
+# Navigation
+# Add links to the main navigation here
+# Use the format: title: "/path/to/page" or title: "https://external-link.com"
+
+- title: "Documentação da API"
+  children:
+    - title: "API de Comunicação"
+      url: /api/comunicacao
+- title: "Guias"
+  children:
+    - title: "Guia de Contribuição"
+      url: /guia/contribuicao
+    - title: "Convenções de Commit"
+      url: /guia/convencao-commit
+    - title: "Guia Multiplataforma"
+      url: /guia/multiplataforma
+- title: "Especificações"
+  children:
+    - title: "Especificação Técnica"
+      url: /specs/especificacao
+- title: "Protocolos"
+  children:
+    - title: "Documentação com Frontmatter"
+      url: /protocolos/frontmatter
+- title: "Repositório"
+  url: https://github.com/peixoto-ops/dje_cli
+  external: true

@@ -1,0 +1,32 @@
+name: Validate Documentation
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    paths:
+      - 'docs/**'
+      - '_docs/**'
+      - '*.md'
+      - '_config.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for broken links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          folder-path: 'docs/, _docs/'
+          config-file: 'mlc_config.json'
+
+      - name: Validate YAML frontmatter
+        run: |
+          # Install yamllint
+          pip install yamllint
+          
+          # Lint all markdown files for YAML frontmatter
+          find . -name "*.md" -exec yamllint -d 'extends: default\nrules:\n  line-length:\n    max: 120\n    level: warning' {} \;

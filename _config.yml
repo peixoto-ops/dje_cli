@@ -1,0 +1,76 @@
+title: PJE CLI Assistant
+email: luizpeixoto@duckgo.com
+description: >-
+  Um assistente de linha de comando em Bash para interagir com a API de Comunicação do Processo Judicial Eletrônico (PJE) do Brasil.
+baseurl: "/dje_cli"
+url: "https://peixoto-ops.github.io"
+github_username: peixoto-ops
+
+# Build settings
+remote_theme: pmarsceill/just-the-docs
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# Theme settings
+color_scheme: "dark"
+search_enabled: true
+
+# Exclusions
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - scripts/
+  - src/
+  - conversas/
+
+# Collections for documentation
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:path/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+  - scope:
+      path: "docs/"
+    values:
+      layout: "default"
+      nav_order: 1
+      has_children: false
+      has_toc: true
+  - scope:
+      path: "_docs/api/"
+    values:
+      parent: "Documentação da API"
+      nav_order: 2
+  - scope:
+      path: "_docs/guia/"
+    values:
+      parent: "Guias"
+      nav_order: 3
+  - scope:
+      path: "_docs/specs/"
+    values:
+      parent: "Especificações"
+      nav_order: 4
+  - scope:
+      path: "_docs/protocolos/"
+    values:
+      parent: "Protocolos"
+      nav_order: 5
+
+# Navigation
+nav_external_links:
+  - title: Repositório GitHub
+    url: https://github.com/peixoto-ops/dje_cli
+    hide_icon: false
